@@ -6,64 +6,104 @@
   <title>Rawat Kendaraan</title>
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <style>
     :root {
-      --bg: #f4f5f7;
+      --bg: #f8fafc;
       --card-bg: #ffffff;
-      --text: #172b4d;
-      --text-sub: #5e6c84;
-      --primary: #0052cc;
-      --primary-dark: #0747a6;
-      --border: #dfe1e6;
-      --shadow: 0 4px 12px rgba(9,30,66,0.08);
-      --radius: 12px;
+      --text: #0f172a;
+      --text-sub: #64748b;
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --border: #e2e8f0;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --radius: 16px;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #d97706;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 90px; -webkit-tap-highlight-color: transparent; }
+    
     .header { background: var(--card-bg); padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-    .header h1 { font-size: 1.2rem; font-weight: 700; color: var(--text); }
-    .container { padding: 16px; max-width: 600px; margin: 0 auto; }
-    .card { background: var(--card-bg); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); }
-    .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-    .subtitle { font-size: 0.85rem; color: var(--text-sub); }
-    .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; background: #ebecf0; color: #42526e; }
-    .badge-mobil { background: #deebff; color: #0747a6; }
-    .badge-motor { background: #e3fcef; color: #006644; }
-    .km-display { font-size: 1.8rem; font-weight: 800; color: var(--primary); margin: 12px 0 4px; }
-    .comp-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
-    .comp-item:last-child { border-bottom: none; }
-    .comp-name { font-weight: 600; font-size: 0.95rem; }
-    .comp-status { font-size: 0.8rem; color: var(--text-sub); text-align: right; }
-    .btn { display: inline-flex; align-items: center; justify-content: center; background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; width: 100%; margin-top: 8px; }
-    .btn:active { background: var(--primary-dark); }
-    .btn-secondary { background: #ebecf0; color: #42526e; }
-    .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
-    .nav-item { border: none; background: none; color: var(--text-sub); font-size: 0.75rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-    .nav-item.active { color: var(--primary); }
-    .loader { text-align: center; padding: 40px 20px; color: var(--text-sub); font-size: 0.9rem; }
-    .input-group { margin-bottom: 12px; }
-    .input-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; color: var(--text-sub); }
-    .input-group input, .input-group select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; }
+    .header h1 { font-size: 1.25rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+    
+    .container { padding: 16px; max-width: 500px; margin: 0 auto; }
+    
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin: 16px 0 12px; }
+    .section-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+    .section-sub { font-size: 0.8rem; color: var(--text-sub); }
+
+    .card { background: var(--card-bg); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden; }
+    .card-veh { display: flex; gap: 14px; align-items: center; }
+    .veh-img { width: 70px; height: 70px; border-radius: 12px; object-fit: cover; background: #f1f5f9; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+    .veh-info { flex: 1; min-width: 0; }
+    .veh-title { font-size: 1.05rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .plat-tag { display: inline-block; background: #000; color: #fff; font-size: 0.75rem; font-weight: 800; padding: 2px 8px; border-radius: 6px; margin: 4px 0; letter-spacing: 0.5px; }
+    .veh-km { font-size: 0.8rem; color: var(--text-sub); }
+
+    .badges-wrapper { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: white; }
+    .bg-success { background-color: var(--success); }
+    .bg-danger { background-color: var(--danger); }
+    .bg-warning { background-color: var(--warning); }
+
+    .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; background: var(--primary); color: white; border: none; padding: 12px 16px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; gap: 6px; text-decoration: none; }
+    .btn:active { background: var(--primary-dark); transform: scale(0.98); }
+    .btn-secondary { background: #f1f5f9; color: var(--text); border: 1px solid var(--border); }
+
+    .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0 16px; z-index: 100; }
+    .nav-item { border: none; background: none; color: var(--text-sub); font-size: 0.75rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; width: 25%; }
+    .nav-item.active { color: var(--primary); font-weight: 700; }
+
+    .input-group { margin-bottom: 14px; }
+    .input-group label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; color: var(--text-sub); }
+    .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.95rem; outline: none; background: #fff; }
+    .input-group input:focus { border-color: var(--primary); }
+
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .dot-online { background: var(--success); }
+    .dot-offline { background: var(--warning); }
   </style>
 </head>
 <body>
 
   <div class="header">
-    <h1 id="app-title">Rawat Kendaraan</h1>
-    <span id="sync-status" class="badge">Offline Mode</span>
+    <div class="header-left">
+      <div class="logo-icon">🔧</div>
+      <h1>Rawat Kendaraan</h1>
+    </div>
+    <div id="sync-badge" class="badge bg-warning" onclick="switchTab('settings')" style="cursor:pointer;">
+      <span class="status-dot dot-offline" id="status-dot"></span>
+      <span id="sync-text">Cek API</span>
+    </div>
   </div>
 
   <div class="container" id="app">
-    <div class="loader">Memuat data kendaraan...</div>
+    <div style="text-align: center; padding: 40px 0; color: var(--text-sub);">Memuat data kendaraan...</div>
   </div>
 
   <div class="nav-bar">
-    <button class="nav-item active" onclick="switchTab('home')">🏠<br>Beranda</button>
-    <button class="nav-item" onclick="switchTab('comps')">⚙️<br>Komponen</button>
-    <button class="nav-item" onclick="switchTab('hist')">📋<br>Riwayat</button>
-    <button class="nav-item" onclick="switchTab('settings')">⚙️<br>Pengaturan</button>
+    <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
+      <span style="font-size:1.2rem;">🏍️</span>
+      <span>Kendaraan</span>
+    </button>
+    <button class="nav-item" id="nav-comps" onclick="switchTab('comps')">
+      <span style="font-size:1.2rem;">⚙️</span>
+      <span>Komponen</span>
+    </button>
+    <button class="nav-item" id="nav-hist" onclick="switchTab('hist')">
+      <span style="font-size:1.2rem;">📋</span>
+      <span>Riwayat</span>
+    </button>
+    <button class="nav-item" id="nav-settings" onclick="switchTab('settings')">
+      <span style="font-size:1.2rem;">⚙️</span>
+      <span>Pengaturan</span>
+    </button>
   </div>
 
   <script>
@@ -80,6 +120,11 @@
       norm();
       const app = document.getElementById('app');
       
+      // Update Tab Navigation Active State
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      const activeNav = document.getElementById('nav-' + currentTab);
+      if (activeNav) activeNav.classList.add('active');
+
       if (currentTab === 'settings') {
         drawSettings(app);
         return;
@@ -88,9 +133,10 @@
       if (R.vehicles.length === 0) {
         app.innerHTML = `
           <div class="card" style="text-align: center; padding: 32px 16px;">
+            <div style="font-size: 3rem; margin-bottom: 12px;">🚗</div>
             <h3>Belum Ada Kendaraan</h3>
-            <p class="subtitle" style="margin-top: 8px;">Silakan periksa pengaturan URL Web App atau tambahkan kendaraan dari Google Sheet.</p>
-            <button class="btn" style="margin-top: 16px;" onclick="switchTab('settings')">Buka Pengaturan API</button>
+            <p style="font-size: 0.85rem; color: var(--text-sub); margin: 8px 0 16px;">Hubungkan URL Google Apps Script Anda atau tambahkan data di Google Sheet.</p>
+            <button class="btn" onclick="switchTab('settings')">Atur API Google Sheet</button>
           </div>
         `;
         return;
@@ -100,40 +146,92 @@
 
       if (currentTab === 'home') {
         let html = `
-          <div class="card">
-            <div class="card-title">
-              <span>${v.motor || 'Kendaraan Saya'}</span>
-              <span class="badge badge-${v.jenis}">${v.jenis.toUpperCase()}</span>
+          <div class="section-header">
+            <div>
+              <div class="section-title">Kendaraan Saya</div>
+              <div class="section-sub">${R.vehicles.length} kendaraan terdaftar</div>
             </div>
-            <div class="subtitle">Odometer Saat Ini</div>
-            <div class="km-display">${(v.km || 0).toLocaleString('id-ID')} <span style="font-size:1rem;">km</span></div>
-            <div class="subtitle">Diperbarui: ${v.kmTgl || '-'}</div>
           </div>
-
-          <div class="card">
-            <div class="card-title">Komponen Perlu Perhatian</div>
         `;
 
-        const urgentComps = (v.comps || []).filter(c => {
-          const limit = c.mode === 'c' ? (c.c || 0) : (c.f || 0);
-          const used = (v.km || 0) - (c.last || 0);
-          return limit > 0 && used >= limit;
+        R.vehicles.forEach((veh, idx) => {
+          const isSelected = idx === activeVehIdx;
+          const foto = (veh.info && veh.info.foto) ? veh.info.foto : '';
+          const plat = (veh.info && veh.info.plat) ? veh.info.plat : '';
+          const pajakHari = (veh.info && veh.info.pajakHari) ? +veh.info.pajakHari : null;
+
+          // Cari status komponen paling kritis
+          let alertBadge = '';
+          (veh.comps || []).forEach(c => {
+            const limit = c.mode === 'c' ? (c.c || 0) : (c.f || 0);
+            const used = (veh.km || 0) - (c.last || 0);
+            if (limit > 0 && used >= limit) {
+              alertBadge = `<span class="badge bg-danger">${c.name}: Terlambat ${(used - limit).toLocaleString('id-ID')} km</span>`;
+            }
+          });
+
+          if (!alertBadge && pajakHari !== null) {
+            if (pajakHari <= 30) {
+              alertBadge = `<span class="badge bg-warning">Pajak: ${pajakHari} hari lagi</span>`;
+            } else {
+              alertBadge = `<span class="badge bg-success">Pajak: ${pajakHari} hari lagi</span>`;
+            }
+          }
+
+          html += `
+            <div class="card" style="${isSelected ? 'border: 2px solid var(--primary);' : ''}" onclick="selectVeh(${idx})">
+              <div class="card-veh">
+                ${foto ? `<img src="${foto}" class="veh-img">` : `<div class="veh-img">${veh.jenis === 'mobil' ? '🚘' : '🛵'}</div>`}
+                <div class="veh-info">
+                  <div class="veh-title">${veh.motor || 'Kendaraan'}</div>
+                  ${plat ? `<div class="plat-tag">${plat}</div>` : ''}
+                  <div class="veh-km">🛣️ ${(veh.km || 0).toLocaleString('id-ID')} km • diperbarui ${veh.kmTgl || 'baru saja'}</div>
+                </div>
+              </div>
+              <div class="badges-wrapper">
+                ${alertBadge || `<span class="badge bg-success">Kondisi Prima 👍</span>`}
+              </div>
+            </div>
+          `;
         });
 
-        if (urgentComps.length === 0) {
-          html += `<div class="subtitle" style="padding: 12px 0;">Semua komponen dalam kondisi aman 👍</div>`;
+        html += `
+          <div class="btn-group">
+            <button class="btn" onclick="alert('Untuk menambah kendaraan, silakan tambahkan baris baru di Google Sheet Anda.')">+ Tambah Motor</button>
+            <button class="btn btn-secondary" onclick="alert('Untuk menambah kendaraan, silakan tambahkan baris baru di Google Sheet Anda.')">+ Tambah Mobil</button>
+          </div>
+        `;
+        app.innerHTML = html;
+
+      } else if (currentTab === 'comps') {
+        let html = `
+          <div class="section-header">
+            <div>
+              <div class="section-title">Komponen: ${v.motor}</div>
+              <div class="section-sub">${(v.comps || []).length} komponen dipantau</div>
+            </div>
+          </div>
+          <div class="card">
+        `;
+        
+        if (!(v.comps || []).length) {
+          html += `<div style="text-align:center; padding:16px; color:var(--text-sub);">Belum ada daftar komponen.</div>`;
         } else {
-          urgentComps.forEach(c => {
+          (v.comps || []).forEach(c => {
             const limit = c.mode === 'c' ? c.c : c.f;
             const used = (v.km || 0) - c.last;
+            const isLate = limit > 0 && used >= limit;
+            
             html += `
-              <div class="comp-item">
+              <div style="display:flex; justify-content:space-between; align-items:center; padding: 12px 0; border-bottom:1px solid var(--border);">
                 <div>
-                  <div class="comp-name">${c.name}</div>
-                  <div class="subtitle">${c.brand || 'Standar'}</div>
+                  <div style="font-weight:700; font-size:0.95rem;">${c.name}</div>
+                  <div style="font-size:0.8rem; color:var(--text-sub);">Merek: ${c.brand || '-'} | Standar: ${limit.toLocaleString('id-ID')} km</div>
                 </div>
-                <div class="comp-status" style="color: #de350b; font-weight:700;">
-                  Lewat ${(used - limit).toLocaleString('id-ID')} km
+                <div style="text-align:right;">
+                  <span class="badge ${isLate ? 'bg-danger' : 'bg-success'}">
+                    ${used.toLocaleString('id-ID')} / ${limit.toLocaleString('id-ID')} km
+                  </span>
                 </div>
               </div>
             `;
@@ -142,39 +240,28 @@
         html += `</div>`;
         app.innerHTML = html;
 
-      } else if (currentTab === 'comps') {
-        let html = `<div class="card"><div class="card-title">Daftar Komponen (${(v.comps || []).length})</div>`;
-        (v.comps || []).forEach(c => {
-          const limit = c.mode === 'c' ? c.c : c.f;
-          const used = (v.km || 0) - c.last;
-          html += `
-            <div class="comp-item">
-              <div>
-                <div class="comp-name">${c.name}</div>
-                <div class="subtitle">Merek: ${c.brand || '-'} | Interval: ${limit.toLocaleString('id-ID')} km</div>
-              </div>
-              <div class="comp-status">
-                ${used.toLocaleString('id-ID')} / ${limit.toLocaleString('id-ID')} km
-              </div>
-            </div>
-          `;
-        });
-        html += `</div>`;
-        app.innerHTML = html;
-
       } else if (currentTab === 'hist') {
-        let html = `<div class="card"><div class="card-title">Riwayat Service</div>`;
+        let html = `
+          <div class="section-header">
+            <div>
+              <div class="section-title">Riwayat Service: ${v.motor}</div>
+              <div class="section-sub">Catatan perawatan berkala</div>
+            </div>
+          </div>
+          <div class="card">
+        `;
+        
         if (!(v.hist || []).length) {
-          html += `<div class="subtitle" style="padding: 12px 0;">Belum ada catatan riwayat.</div>`;
+          html += `<div style="text-align:center; padding:16px; color:var(--text-sub);">Belum ada riwayat service.</div>`;
         } else {
           (v.hist || []).forEach(h => {
             html += `
-              <div class="comp-item">
+              <div style="display:flex; justify-content:space-between; align-items:center; padding: 12px 0; border-bottom:1px solid var(--border);">
                 <div>
-                  <div class="comp-name">${h.comp}</div>
-                  <div class="subtitle">${h.date} | ${h.shop || 'Bengkel'}</div>
+                  <div style="font-weight:700; font-size:0.95rem;">${h.comp}</div>
+                  <div style="font-size:0.8rem; color:var(--text-sub);">${h.date} • ${h.shop || 'Bengkel'}</div>
                 </div>
-                <div class="comp-status" style="font-weight:600;">
+                <div style="font-weight:700; color:var(--primary);">
                   Rp ${(h.price || 0).toLocaleString('id-ID')}
                 </div>
               </div>
@@ -186,14 +273,22 @@
       }
     }
 
+    function selectVeh(idx) {
+      activeVehIdx = idx;
+      draw();
+    }
+
     function drawSettings(app) {
       app.innerHTML = `
+        <div class="section-header">
+          <div class="section-title">Pengaturan Aplikasi</div>
+        </div>
         <div class="card">
-          <div class="card-title">Pengaturan API Google Sheet</div>
-          <p class="subtitle" style="margin-bottom: 12px;">Masukkan Web App URL Apps Script Anda di sini untuk menghubungkan database pribadi Anda.</p>
+          <div style="font-weight:700; font-size:1rem; margin-bottom:6px;">URL API Google Sheet</div>
+          <p style="font-size:0.8rem; color:var(--text-sub); margin-bottom:14px;">Tempelkan URL Web App dari Google Apps Script Anda di sini agar aplikasi terhubung ke Google Drive Anda.</p>
           <div class="input-group">
             <label>Web App API URL</label>
-            <input type="text" id="api-url-input" value="${SCRIPT_URL}">
+            <input type="text" id="api-url-input" value="${SCRIPT_URL}" placeholder="https://script.google.com/macros/s/.../exec">
           </div>
           <button class="btn" onclick="saveSettings()">Simpan & Hubungkan</button>
         </div>
@@ -205,7 +300,7 @@
       if (val) {
         SCRIPT_URL = val;
         localStorage.setItem('script_url', val);
-        alert('URL API Berhasil disimpan!');
+        alert('URL API berhasil disimpan!');
         currentTab = 'home';
         loadData();
       }
@@ -213,15 +308,19 @@
 
     function switchTab(tab) {
       currentTab = tab;
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
       draw();
     }
 
     function loadData() {
-      document.getElementById('sync-status').textContent = "Syncing...";
-      document.getElementById('sync-status').style.background = "#fff0b3";
+      const badge = document.getElementById('sync-badge');
+      const dot = document.getElementById('status-dot');
+      const text = document.getElementById('sync-text');
 
-      // 1. Tampilkan Cache
+      text.textContent = "Syncing...";
+      badge.className = "badge bg-warning";
+      dot.className = "status-dot dot-offline";
+
+      // 1. Ambil dari Cache Lokal Terlebih Dahulu (Instant Load)
       const cached = localStorage.getItem('rawat_kendaraan_cache');
       if (cached) {
         try {
@@ -230,22 +329,24 @@
         } catch(e) {}
       }
 
-      // 2. Fetch Server
+      // 2. Tarik Data Terbaru dari Apps Script API
       fetch(SCRIPT_URL + "?action=getState")
         .then(res => res.json())
         .then(data => {
           if (data && data.vehicles) {
             R = data;
             localStorage.setItem('rawat_kendaraan_cache', JSON.stringify(R));
-            document.getElementById('sync-status').textContent = "Online";
-            document.getElementById('sync-status').style.background = "#e3fcef";
+            text.textContent = "Online";
+            badge.className = "badge bg-success";
+            dot.className = "status-dot dot-online";
             draw();
           }
         })
         .catch(err => {
           console.error("Gagal koneksi:", err);
-          document.getElementById('sync-status').textContent = "Offline/Cache";
-          document.getElementById('sync-status').style.background = "#ffebe6";
+          text.textContent = "Offline";
+          badge.className = "badge bg-danger";
+          dot.className = "status-dot dot-offline";
         });
     }
 
