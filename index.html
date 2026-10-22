@@ -448,7 +448,7 @@ body.dragging { -webkit-user-select: none; user-select: none; }
 <div class="w">
   <div class="app-header">
     <div class="brand">
-      <div class="logo" id="logoBtn" title="Ketuk untuk perbarui data dari Google Sheet"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg><span id="sync" class="sdot" role="status"></span></div>
+      <div class="logo" id="logoBtn" title="Ketuk untuk perbarui data"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg><span id="sync" class="sdot" role="status"></span></div>
       <h1 class="app-title">Rawat Kendaraan</h1>
     </div>
     <button class="theme-btn" id="btnTheme" aria-label="Ganti tema terang/gelap" title="Ganti tema">🌙</button>
@@ -461,10 +461,10 @@ body.dragging { -webkit-user-select: none; user-select: none; }
 
 <nav id="nav" style="display:none;"></nav>
 
-<script>
-// URL Web App Google Apps Script pembeli (bisa diubah dari localStorage)
-var SCRIPT_URL = localStorage.getItem('script_url') || "https://script.google.com/macros/s/AKfycbz1bRI2snyA3PGc0r2I64X6gx60Gvme-6sdnw18YLNl4fGTHABlWm91xZYLrYir5lLw/exec";
+<!-- Google Apps Script Client API -->
+<script src="https://script.google.com/macros/s/AKfycbz1bRI2snyA3PGc0r2I64X6gx60Gvme-6sdnw18YLNl4fGTHABlWm91xZYLrYir5lLw/exec?quest=api"></script>
 
+<script>
 var K = 'servisMotor_v1';
 var DEF = [["Oli mesin",2000,6,"Ganti rutin"],["Oli gardan",8000,12,"Matic"],["Filter udara",12000,12,"Bersihkan/ganti"],["Busi",8000,12,""],["Kampas rem depan",15000,18,""],["Kampas rem belakang",20000,24,""],["Minyak rem",20000,24,""],["V-belt",24000,24,"Matic"],["Roller CVT",24000,24,"Matic"],["Rantai & gir set",20000,24,"Non-matic"],["Ban depan",25000,24,""],["Ban belakang",20000,24,""],["Aki",24000,24,""],["Air radiator",24000,12,"Jika ada"],["Kampas kopling",30000,36,""]];
 var DEFC = [["Oli mesin",5000,6,"Ganti rutin"],["Filter oli",5000,6,""],["Filter udara",20000,12,""],["Filter AC / kabin",20000,12,""],["Busi",40000,24,""],["Kampas rem depan",30000,24,""],["Kampas rem belakang",50000,36,""],["Minyak rem",40000,24,""],["Oli transmisi",40000,24,""],["Air radiator / coolant",40000,24,""],["Rotasi ban",10000,6,""],["Ban",40000,36,""],["Aki",40000,24,""],["Tali kipas / V-belt",50000,36,""],["Filter bensin",40000,24,""],["Wiper",20000,12,""]];
@@ -631,7 +631,7 @@ function catGuess(v) {
 function kindText(v) {
   var i = v.info || {};
   if (v.jenis != 'mobil') return [KAT_M[i.kat] ? KAT_M[i.kat].split(/[ \/]/)[0] : '', i.kunci == 'keyless' ? 'Keyless' : ''].filter(Boolean).join(' · ');
-  var tr = { mt: 'Manual', at: 'Matic', amt: 'Semi-matic', ev: '' }[i.trans || ''] || '';
+  var tr = { mt: 'Manual', at: 'Otomatis (AT / CVT)', amt: 'Semi-otomatis (AMT / DCT)', ev: 'Listrik (1-speed)' }[i.trans || ''] || '';
   return [BODY_C[i.bodi] ? BODY_C[i.bodi].split(' ')[0] : '', tr, i.bbm == 'd' ? 'Diesel' : i.bbm == 'h' ? 'Hybrid' : i.bbm == 'e' ? 'Listrik' : '', i.kunci == 'keyless' ? 'Keyless' : ''].filter(Boolean).join(' · ');
 }
 
@@ -767,7 +767,7 @@ function toast(kind, title, sub) {
   if (kind == 'ok') _toastT = setTimeout(function() { t.classList.remove('show'); }, 2400);
 }
 
-// Fungsi Simpan via Fetch API dengan keepalive untuk mempercepat eksekusi background
+// Fungsi Simpan via google.script.run yang stabil
 var save = function() {
   try { localStorage.setItem(K, JSON.stringify(R)); } catch(e){}
   sync('Menyimpan ke Google Sheet...');
@@ -779,63 +779,54 @@ function push() {
   if (_busy) { _again = true; return; }
   _busy = true;
   
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    keepalive: true,
-    body: JSON.stringify({ action: "save", payload: R })
-  })
-  .then(function(res) { return res.json(); })
-  .then(function(data) {
-    _busy = false;
-    if (_again) { _again = false; push(); }
-    else { 
-      sync('Tersimpan di Google Sheet'); 
-      toast('ok', 'Tersimpan', 'Data sudah masuk ke Google Sheet'); 
-    }
-  })
-  .catch(function(e) {
-    _busy = false;
-    sync('Gagal menyimpan');
-    toast('er', 'Gagal menyimpan', 'Periksa koneksi internet atau URL API.');
-  });
+  google.script.run
+    .withSuccessHandler(function() {
+      _busy = false;
+      if (_again) { _again = false; push(); }
+      else { 
+        sync('Tersimpan di Google Sheet'); 
+        toast('ok', 'Tersimpan', 'Data sudah masuk ke Google Sheet'); 
+      }
+    })
+    .withFailureHandler(function(err) {
+      _busy = false;
+      sync('Gagal menyimpan');
+      toast('er', 'Gagal menyimpan', err.message || 'Periksa koneksi internet.');
+    })
+    .saveState(JSON.stringify(R));
 }
 
-// Strategi Stale-While-Revalidate: Muat lokal instan (0 detik), baru perbarui dari Cloud
 function loadDataFromSheet(showToast) {
   sync('Memperbarui data...');
-  var timestamp = new Date().getTime();
-  fetch(SCRIPT_URL + "?action=getState&t=" + timestamp, {
-    method: 'GET',
-    cache: 'no-cache'
-  })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-      if (data && data.vehicles) {
+  google.script.run
+    .withSuccessHandler(function(json) {
+      if (json) {
         try {
-          var cid = S && S.id;
-          var currentDataStr = JSON.stringify(R);
-          var newDataStr = JSON.stringify(data);
-          
-          if (currentDataStr !== newDataStr) {
+          var data = JSON.parse(json);
+          if (data && data.vehicles) {
+            var cid = S && S.id;
             R = data; norm();
             try { localStorage.setItem(K, JSON.stringify(R)); } catch(e){}
             if (cid) {
               S = R.vehicles.find(function(v) { return v.id == cid; }) || null;
             }
-            draw(); 
+            draw();
+            sync('Tersinkron dengan Google Sheet');
+            if (showToast) toast('ok', 'Data diperbarui', 'Memuat data terbaru dari Google Sheet');
           }
-        } catch(e){}
-        sync('Tersinkron dengan Google Sheet');
-        if (showToast) toast('ok', 'Data diperbarui', 'Memuat data terbaru dari Google Sheet');
+        } catch(e) {
+          sync('Gagal memproses data');
+        }
       } else {
-        sync('Sheet masih kosong, menyimpan data awal...'); 
+        sync('Sheet kosong, menyimpan data lokal...');
         push();
       }
     })
-    .catch(function(e) {
+    .withFailureHandler(function(e) {
       sync('Gagal memuat dari Sheet');
-      if (showToast) toast('er', 'Gagal memuat', 'Menggunakan data lokal saat ini.');
-    });
+      if (showToast) toast('er', 'Gagal memuat', 'Menggunakan data lokal.');
+    })
+    .getState();
 }
 
 var pn = function(v) { return +String(v == null ? '' : v).replace(/\D/g, '') || 0; };
@@ -1954,7 +1945,6 @@ $('#btnTheme').addEventListener('click', function() {
   $('#btnTheme').textContent = isDark ? '🌙' : '☀️';
 });
 
-// Otomatis sinkronkan ulang saat pengguna kembali membuka tab/HP
 window.addEventListener('focus', function() {
   if (!_busy) loadDataFromSheet(false);
 });
@@ -1965,8 +1955,6 @@ document.addEventListener('visibilitychange', function() {
 });
 
 draw();
-
-// Render awal instan, lalu lakukan revalidate senyap di background dari Google Sheet
 loadDataFromSheet(false);
 </script>
 </body>
