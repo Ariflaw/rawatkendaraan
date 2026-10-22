@@ -767,12 +767,12 @@ function toast(kind, title, sub) {
   if (kind == 'ok') _toastT = setTimeout(function() { t.classList.remove('show'); }, 2400);
 }
 
-// Fungsi Simpan via Fetch API (Mendukung GitHub Pages & Lynk.id)
+// Fungsi Simpan via Fetch API dengan keepalive untuk mempercepat eksekusi background
 var save = function() {
   try { localStorage.setItem(K, JSON.stringify(R)); } catch(e){}
   sync('Menyimpan ke Google Sheet...');
   clearTimeout(_t);
-  _t = setTimeout(push, 500);
+  _t = setTimeout(push, 300);
 };
 
 function push() {
@@ -781,6 +781,7 @@ function push() {
   
   fetch(SCRIPT_URL, {
     method: "POST",
+    keepalive: true,
     body: JSON.stringify({ action: "save", payload: R })
   })
   .then(function(res) { return res.json(); })
@@ -799,22 +800,31 @@ function push() {
   });
 }
 
-// Fungsi Muat Data dari Google Sheet API dengan Anti-Cache Waktu (Timestamp)
+// Strategi Stale-While-Revalidate: Muat lokal instan (0 detik), baru perbarui dari Cloud
 function loadDataFromSheet(showToast) {
   sync('Memperbarui data...');
   var timestamp = new Date().getTime();
-  fetch(SCRIPT_URL + "?action=getState&t=" + timestamp)
+  fetch(SCRIPT_URL + "?action=getState&t=" + timestamp, {
+    method: 'GET',
+    cache: 'no-cache'
+  })
     .then(function(res) { return res.json(); })
     .then(function(data) {
       if (data && data.vehicles) {
         try {
           var cid = S && S.id;
-          R = data; norm();
-          if (cid) {
-            S = R.vehicles.find(function(v) { return v.id == cid; }) || null;
+          var currentDataStr = JSON.stringify(R);
+          var newDataStr = JSON.stringify(data);
+          
+          if (currentDataStr !== newDataStr) {
+            R = data; norm();
+            try { localStorage.setItem(K, JSON.stringify(R)); } catch(e){}
+            if (cid) {
+              S = R.vehicles.find(function(v) { return v.id == cid; }) || null;
+            }
+            draw(); 
           }
         } catch(e){}
-        draw(); 
         sync('Tersinkron dengan Google Sheet');
         if (showToast) toast('ok', 'Data diperbarui', 'Memuat data terbaru dari Google Sheet');
       } else {
@@ -1956,7 +1966,7 @@ document.addEventListener('visibilitychange', function() {
 
 draw();
 
-// Muat data awal dari Google Sheet API saat pertama kali aplikasi dibuka
+// Render awal instan, lalu lakukan revalidate senyap di background dari Google Sheet
 loadDataFromSheet(false);
 </script>
 </body>
