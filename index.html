@@ -1,48 +1,67 @@
-<script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1bRI2snyA3PGc0r2I64X6gx60Gvme-6sdnw18YLNl4fGTHABlWm91xZYLrYir5lLw/exec";
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rawat Kendaraan</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
 
-  // Fungsi Ambil Data dengan Pengaman Error
-  function loadData() {
-    // 1. Muat dari cache lokal terlebih dahulu agar langsung tampil
-    var cached = localStorage.getItem('rawat_kendaraan_cache');
-    if (cached) {
-      try {
-        R = JSON.parse(cached);
-        if (typeof norm === 'function') norm();
-        if (typeof draw === 'function') draw();
-      } catch(e) {
-        console.error("Gagal parse cache:", e);
-      }
-    }
+  <!-- Bagian Tampilan Aplikasi Anda (HTML UI) diletakkan di sini -->
+  <div id="app"></div>
 
-    // 2. Tarik data terbaru dari server Google Sheet
-    fetch(SCRIPT_URL + "?action=getState")
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.vehicles) {
-          R = data;
-          localStorage.setItem('rawat_kendaraan_cache', JSON.stringify(R));
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1bRI2snyA3PGc0r2I64X6gx60Gvme-6sdnw18YLNl4fGTHABlWm91xZYLrYir5lLw/exec";
+
+    // Fungsi Ambil Data
+    function loadData() {
+      // 1. Tampilkan dari cache lokal dulu agar instan
+      var cached = localStorage.getItem('rawat_kendaraan_cache');
+      if (cached) {
+        try {
+          R = JSON.parse(cached);
           if (typeof norm === 'function') norm();
           if (typeof draw === 'function') draw();
+        } catch (e) {
+          console.error("Gagal membaca cache:", e);
         }
-      })
-      .catch(err => {
-        console.error("Gagal ambil data dari server:", err);
+      }
+
+      // 2. Tarik data terbaru dari Apps Script
+      fetch(SCRIPT_URL + "?action=getState")
+        .then(function(res) {
+          return res.json();
+        })
+        .then(function(data) {
+          if (data && (data.vehicles || Array.isArray(data))) {
+            R = data;
+            localStorage.setItem('rawat_kendaraan_cache', JSON.stringify(R));
+            if (typeof norm === 'function') norm();
+            if (typeof draw === 'function') draw();
+          }
+        })
+        .catch(function(err) {
+          console.error("Gagal mengambil data server:", err);
+        });
+    }
+
+    // Fungsi Simpan Data
+    function saveData() {
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "save", payload: R })
+      }).catch(function(err) {
+        console.error("Gagal menyimpan data:", err);
       });
-  }
+    }
 
-  // Fungsi Simpan Data
-  function saveData() {
-    fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "save", payload: R })
-    }).catch(err => {
-      console.error("Gagal menyimpan data:", err);
+    // Jalankan pemuatan data saat halaman selesai dimuat
+    window.addEventListener('DOMContentLoaded', function() {
+      loadData();
     });
-  }
-
-  // Panggil loadData saat halaman pertama kali dibuka
-  window.onload = function() {
-    if (typeof loadData === 'function') loadData();
-  };
-</script>
+  </script>
+</body>
+</html>
