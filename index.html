@@ -7,6 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
 :root {
   --bg-main: #f8fafc;
@@ -100,9 +103,6 @@ button.p { background: var(--primary); color: #fff; border: none; font-weight: 7
 .btn-outline { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; padding: 5px 10px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: all 0.15s ease; min-height: 32px; }
 .btn-outline:active { background: var(--bg-subtle); transform: scale(0.98); }
 
-.btn-icon-del { background: none; border: none; color: #ef4444; width: 26px; height: 26px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; padding: 0; min-height: 0; transition: background 0.15s ease; }
-.btn-icon-del:active { background: #fee2e2; }
-
 .bar { height: 6px; background: var(--bg-subtle); border-radius: 99px; overflow: hidden; margin-top: 6px; }
 .bar i { display: block; height: 100%; border-radius: 99px; }
 .bar i.ok { background: var(--ok-bg); }
@@ -112,8 +112,6 @@ button.p { background: var(--primary); color: #fff; border: none; font-weight: 7
 .g { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-top: 8px; font-size: 12px; }
 .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; align-items: stretch; }
 .mu { color: var(--text-muted); font-size: 11px; }
-
-.big { font-size: 20px; font-weight: 800; line-height: 1.2; color: var(--text-main); }
 
 .row { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
 .plate { display: inline-block; background: var(--text-main); color: var(--bg-card); border-radius: 5px; padding: 1px 6px; font-weight: 800; letter-spacing: 1px; font-size: 12px; margin: 2px 0; }
@@ -465,6 +463,9 @@ body.dragging { -webkit-user-select: none; user-select: none; }
 <nav id="nav" style="display:none;"></nav>
 
 <script>
+// URL Web App Google Apps Script pembeli (bisa diubah dari localStorage)
+var SCRIPT_URL = localStorage.getItem('script_url') || "https://script.google.com/macros/s/AKfycbz1bRI2snyA3PGc0r2I64X6gx60Gvme-6sdnw18YLNl4fGTHABlWm91xZYLrYir5lLw/exec";
+
 var K = 'servisMotor_v1';
 var DEF = [["Oli mesin",2000,6,"Ganti rutin"],["Oli gardan",8000,12,"Matic"],["Filter udara",12000,12,"Bersihkan/ganti"],["Busi",8000,12,""],["Kampas rem depan",15000,18,""],["Kampas rem belakang",20000,24,""],["Minyak rem",20000,24,""],["V-belt",24000,24,"Matic"],["Roller CVT",24000,24,"Matic"],["Rantai & gir set",20000,24,"Non-matic"],["Ban depan",25000,24,""],["Ban belakang",20000,24,""],["Aki",24000,24,""],["Air radiator",24000,12,"Jika ada"],["Kampas kopling",30000,36,""]];
 var DEFC = [["Oli mesin",5000,6,"Ganti rutin"],["Filter oli",5000,6,""],["Filter udara",20000,12,""],["Filter AC / kabin",20000,12,""],["Busi",40000,24,""],["Kampas rem depan",30000,24,""],["Kampas rem belakang",50000,36,""],["Minyak rem",40000,24,""],["Oli transmisi",40000,24,""],["Air radiator / coolant",40000,24,""],["Rotasi ban",10000,6,""],["Ban",40000,36,""],["Aki",40000,24,""],["Tali kipas / V-belt",50000,36,""],["Filter bensin",40000,24,""],["Wiper",20000,12,""]];
@@ -736,7 +737,6 @@ var editIds = null, editNames = null;
 var withV = function(v, f) { var k = S; S = v; try { return f(); } finally { S = k; } };
 var $ = function(s) { return document.querySelector(s); };
 var E = function(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function(m) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[m]; }); };
-var HAS = typeof google !== 'undefined' && google.script && google.script.run;
 var _t, _busy = false, _again = false;
 
 var sync = function(m) {
@@ -768,9 +768,9 @@ function toast(kind, title, sub) {
   if (kind == 'ok') _toastT = setTimeout(function() { t.classList.remove('show'); }, 2400);
 }
 
+// Fungsi Simpan via Fetch API (Mendukung GitHub Pages & Lynk.id)
 var save = function() {
   try { localStorage.setItem(K, JSON.stringify(R)); } catch(e){}
-  if (!HAS) return;
   sync('Menyimpan ke Google Sheet...');
   clearTimeout(_t);
   _t = setTimeout(push, 500);
@@ -779,15 +779,25 @@ var save = function() {
 function push() {
   if (_busy) { _again = true; return; }
   _busy = true;
-  google.script.run.withSuccessHandler(function() {
+  
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "save", payload: R })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
     _busy = false;
     if (_again) { _again = false; push(); }
-    else { sync('Tersimpan di Google Sheet'); toast('ok', 'Tersimpan', 'Data sudah masuk ke Google Sheet'); }
-  }).withFailureHandler(function(e) {
+    else { 
+      sync('Tersimpan di Google Sheet'); 
+      toast('ok', 'Tersimpan', 'Data sudah masuk ke Google Sheet'); 
+    }
+  })
+  .catch(function(e) {
     _busy = false;
-    sync('Gagal menyimpan: ' + (e && e.message || e));
-    toast('er', 'Gagal menyimpan', 'Periksa koneksi internet Anda lalu coba lagi.');
-  }).saveState(JSON.stringify(R));
+    sync('Gagal menyimpan');
+    toast('er', 'Gagal menyimpan', 'Periksa koneksi internet atau URL API.');
+  });
 }
 
 var pn = function(v) { return +String(v == null ? '' : v).replace(/\D/g, '') || 0; };
@@ -912,7 +922,6 @@ function pj() {
   if (!d) return { t: 'Belum diisi', k: 'wa', tgl: '' };
   var sv = S.info.pajakStatus || '';
   
-  // Jika status 'lunas', kalkulasi langsung berdasarkan jatuh tempo 1 tahun berikutnya
   if (sv == 'lunas') {
     var dNext = addMonths(d, 12);
     var nNext = Math.round((new Date(dNext + 'T00:00:00') - new Date(new Date().toDateString())) / 864e5);
@@ -1745,7 +1754,7 @@ document.addEventListener('click', function(e) {
   else if (t.id == 'imp') {
     var raw = prompt('Tempel isi CSV (tanpa header: Tanggal,KM,Komponen,Harga,Tempat,Catatan,Merek):'); if (!raw) return;
     raw.split('\n').forEach(function(l) {
-      if (!l.trim() || /^"?tanggal/i.test(l)) return;
+      if (!l.trim() || /^Ingrese|^"?tanggal/i.test(l)) return;
       var p_csv = (l.match(/("([^"]|"")*"|[^,]*)(,|$)/g) || []).map(function(s) { return s.replace(/,$/, '').replace(/^"|"$/g, '').replace(/""/g, '"'); });
       if (p_csv[0] && p_csv[2]) (S.hist=S.hist||[]).push({ id: uid(), date: p_csv[0], km: +p_csv[1] || 0, comp: p_csv[2], price: +p_csv[3] || 0, shop: p_csv[4] || '', note: p_csv[5] || '', brand: p_csv[6] || '' });
     }); 
@@ -1908,25 +1917,29 @@ $('#btnTheme').addEventListener('click', function() {
 
 draw();
 
-if (HAS) {
-  sync('Memuat dari Google Sheet...');
-  google.script.run.withSuccessHandler(function(r) {
-    if (r) {
+// Muat data awal dari Google Sheet API menggunakan fetch
+sync('Memuat dari Google Sheet...');
+fetch(SCRIPT_URL + "?action=getState")
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data && data.vehicles) {
       try {
         var cid = S && S.id;
-        R = JSON.parse(r); norm();
+        R = data; norm();
         S = R.vehicles.find(function(v) { return v.id == cid; }) || null;
         if (!S) { tab = 'home'; editM = false; }
       } catch(e){}
-      draw(); sync('Tersinkron dengan Google Sheet');
+      draw(); 
+      sync('Tersinkron dengan Google Sheet');
     } else {
-      sync('Sheet masih kosong, menyimpan data awal...'); push();
+      sync('Sheet masih kosong, menyimpan data awal...'); 
+      push();
     }
-  }).withFailureHandler(function(e) {
+  })
+  .catch(function(e) {
     sync('Gagal memuat dari Sheet, menggunakan data lokal.');
     draw();
-  }).getState();
-}
+  });
 </script>
 </body>
 </html>
